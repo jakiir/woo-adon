@@ -1,0 +1,18 @@
+.romit_checkout_popup
+{
+    width: 90% !important;
+    margin-left: -45% !important;
+    height:70%;
+    min-height:400px;
+    padding: 20px !important;
+}
+
+.romit_checkout_popup iframe
+{
+    width:100%;
+}
+
+.romit_iframe_wrap
+{
+    width:100%;
+}

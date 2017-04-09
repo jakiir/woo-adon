@@ -295,17 +295,18 @@ function init_edebitdirect_Payment_Gateway() {
 
                 if($this->settings['test_mode']=='no')
                 {
-                    $domain = 'https://checkout.edebitdirect';
+                    $domain = 'https://edebitdirect.com/app/api/v1/check';
                     $test=0;
                 }
                 else
                 {
-                    $domain = 'https://checkout.sandbox.edebitdirect';
+                    $domain = 'https://dev.edebitdirect.com/app/api/v1/check';
                     $test=1;
                 }
 
 //                $frame_url = $domain.'/payment-page?vendor_id='.$this->settings['vendor_id'].'&price='.$args['amt'].'&memo='.$memo.'&currency_type='.$args['ccy'].'';
                 $frame_url = $domain.'/payment-page';
+                //die($frame_url);
                 $swal = "
 					jQuery(function() {
 		                edebitdirect.initialize('".$this->settings['vendor_id']."',
@@ -339,13 +340,13 @@ function init_edebitdirect_Payment_Gateway() {
 
                 return '<p>'.__('Thank you for your order, please click the button in
                 		<button id="edebitdirectButton"
-							style="background-image: url(&quot;https://checkout.sandbox.edebitdirect/app/img/edebitdirect_button_2x.png&quot;); background-size: cover; width: 236px; height: 51px; background-color: transparent; border: none;"
+							style="background-size: cover; width: 236px; height: 51px; background-color:#333; border: none;"
 							data-payment="edebitdirect"
 							data-memo="'.$memo.'"
 							class="edebitdirect-payment-button"
 							data-price="'.$args['amt'].'"
 							data-invoiceId="'.$order_id.'"
-							data-server-url="'.$frame_url.'">
+							data-server-url="'.$frame_url.'">Checkout Now
 						</button>.',
 				'woocommerce')."</p>
 				<script>

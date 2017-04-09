@@ -1,0 +1,16 @@
+/wp-admin
+/wp-includes
+
+/wp-admin/*
+wp-admin/*
+
+/wp-includes/*
+wp-includes/*
+
+wp-config.php
+.htaccess
+
+
+/.idea
+/.idea/*
+.idea/*

@@ -150,7 +150,7 @@ function init_edebitdirect_Payment_Gateway() {
                     'type' => 'text',
                     'description' => __( 'This controls the title which the user sees during checkout.', 'edebitdirect' ),
                     'desc_tip' => true,
-                    'default' => __( 'edebitdirect', 'edebitdirect' )
+                    'default' => __( 'EdebitDirect', 'edebitdirect' )
                 ),
                 'description_' => array(
                     'title' => __( 'Description', 'edebitdirect' ),
@@ -174,19 +174,19 @@ function init_edebitdirect_Payment_Gateway() {
     				'default' => __( '', 'edebitdirect' )
     			),
                 'CallbackSecret'.$type_input => array(
-    				'title' => __( $type_label.'Callback Secret', 'edebitdirect' ),
+    				'title' => __( $type_label.'API KEY', 'edebitdirect' ),
     				'type' => 'text',
                     'desc_tip' => true,
-    				'description' => __( 'Your Callback Secret. You can get it on edebitdirect account. Tools -> Edit Checkout configuration', 'edebitdirect' ),
+    				'description' => __( 'Your API KEY. You can get it on edebitdirect account. Tools -> Edit Checkout configuration', 'edebitdirect' ),
     				'default' => __( '', 'edebitdirect' )
     			),
-                'iframe_callback1234' => array(
+                /*'iframe_callback1234' => array(
                     'title' => __( 'Callback URL: <b>'.$iframe_callback.'</b>', 'edebitdirect' ),
                     'type' => 'title',
                     'desc_tip' => true,
     				'default' => $iframe_callback,
                     'description' => 'Copy this Callback URL into <a href="https://wallet.edebitdirect/#/app/merchant/tools/checkout" target="_blank">https://wallet.edebitdirect/#/app/ merchant/tools/checkout</a>'
-                ),
+                ),*/
                 /*
                 'app_id' => array(
                     'title' => __( 'Application ID', 'edebitdirect' ),
@@ -305,55 +305,130 @@ function init_edebitdirect_Payment_Gateway() {
                 }
 
 //                $frame_url = $domain.'/payment-page?vendor_id='.$this->settings['vendor_id'].'&price='.$args['amt'].'&memo='.$memo.'&currency_type='.$args['ccy'].'';
-                $frame_url = $domain.'/payment-page';
+                $frame_url = $domain;
+                $email = $order->billing_email;
+                $first_name = $order->billing_first_name;
+                $last_name = $order->billing_last_name;
+                $fullName = $first_name.' '.$last_name;
+                $company = $order->billing_company;
+                $address_1 = $order->billing_address_1;
+                $address_2 = $order->billing_address_2;
+                $city = $order->billing_city;
+                $state = $order->billing_state;
+                $postcode = $order->billing_postcode;
+                $country = $order->billing_country;
+                $phone = $order->billing_phone;
+                $street = $address_1.' '.$address_2.' '.$country;
+
+
+                ini_set('display_errors', 1);
+                ini_set('display_startup_errors', 1);
+                error_reporting(E_ALL);
+
+                //API Url
+                $url = 'https://dev.edebitdirect.com/app/api/v1/check/';
+
+                //Initiate cURL.
+                $ch = curl_init($url);
+
+                //The JSON data.
+                $jsonData = array(
+                  "customer_name"   => $fullName,
+                  "customer_street" => $street,
+                  "customer_city"   => $city,
+                  "customer_state"  => "WA",
+                  "customer_zip"    => "90045",
+                  "customer_phone"  => $phone,
+                  "customer_email"  => $email,
+                  "amount"          => $args['amt'],
+                  "check_number"    => $order_id,
+                  "routing_number"  => "122000247",
+                  "account_number"  => "1234567890"
+                );
+
+                $jsonDataEncoded = json_encode($jsonData);
+                //echo $jsonDataEncoded; exit;
+
+                $header = array(
+                        "Authorization: apikey 407U7C7S1:a69c6194c10a0b7f343a53c3ab966d35523f0ea5",
+                        "Content-Type: application/json",
+                        "Cache-Control: no-cache"
+                        );
+
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_VERBOSE, 1);
+                curl_setopt($ch, CURLOPT_HEADER, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+                //Execute the request
+                $result = curl_exec($ch);
+                $checkoutUrl = '';
+                if($result === FALSE) {
+                    die(curl_error($ch));
+                } else {
+                    $checkoutUrl = get_permalink(woocommerce_get_page_id('pay')).'order-received/'.$order_id.'/?key='.$order->order_key;
+                    //echo add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(woocommerce_get_page_id('pay'))));
+                    echo "<script>window.location.href = '".$checkoutUrl."';</script>";
+                    //global $woocommerce;
+                //$woocommerce->cart->empty_cart();
+                }
+
+                curl_close($ch);
                 //die($frame_url);
-                $swal = "
-					jQuery(function() {
-		                edebitdirect.initialize('".$this->settings['vendor_id']."',
-    		  		      function (paymentId) {
-								location.reload();
-		    		        },
-        				    function () {
+    //             $swal = "
+				// 	jQuery(function() {
+		  //               edebitdirect.initialize('".$this->settings['vendor_id']."',
+    // 		  		      function (paymentId) {
+				// 				location.reload();
+		  //   		        },
+    //     				    function () {
 
-				            },
-				            '',
-				            null,
-				            ".$test."
-					    );
-					    $('edebitdirectButton').trigger('click');
-					});
-					var lastHeight = 0;
-					var resizeIFrameTimer = null;
-					function resizeIframe() {
-						var obj = document.getElementById('edebitdirectFrame');
-						if(lastHeight != obj.contentWindow.document.body.scrollHeight) {
-							lastHeight = obj.contentWindow.document.body.scrollHeight;
-							obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
-						}
-						if (resizeIFrameTimer == null) {
-							//To handle angular resizes
-							resizeIFrameTimer = setInterval(resizeIframe, 1000);
-						}
-					}
-				";
-                $iframe = '<iframe id="edebitdirectFrame" style="display:none;width:100%;min-height:800px;border:none" frameborder="0" scrolling="no" onload="resizeIframe()"></iframe>';
+				//             },
+				//             '',
+				//             null,
+				//             ".$test.",
+    //                         'Jak'
+				// 	    );
+					    
+				// 	});
+				// 	var lastHeight = 0;
+				// 	var resizeIFrameTimer = null;
+				// ";
+                /*
+                $('edebitdirectButton').trigger('click');
+                    function resizeIframe() {
+                        var obj = document.getElementById('edebitdirectFrame');
+                        if(lastHeight != obj.contentWindow.document.body.scrollHeight) {
+                            lastHeight = obj.contentWindow.document.body.scrollHeight;
+                            obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+                        }
+                        if (resizeIFrameTimer == null) {
+                            //To handle angular resizes
+                            resizeIFrameTimer = setInterval(resizeIframe, 1000);
+                        }
+                    }
+                */
+                $iframe = '';//'<iframe id="edebitdirectFrame" style="display:none;width:100%;min-height:800px;border:none" frameborder="0" scrolling="no" onload="resizeIframe()"></iframe>';
 
-                return '<p>'.__('Thank you for your order, please click the button in
-                		<button id="edebitdirectButton"
-							style="background-size: cover; width: 236px; height: 51px; background-color:#333; border: none;"
-							data-payment="edebitdirect"
-							data-memo="'.$memo.'"
-							class="edebitdirect-payment-button"
-							data-price="'.$args['amt'].'"
-							data-invoiceId="'.$order_id.'"
-							data-server-url="'.$frame_url.'">Checkout Now
-						</button>.',
-				'woocommerce')."</p>
-				<script>
-                            ".$swal."
-				</script>
+    //             return '<p>'.__('Thank you for your order, please click the button in
+    //             		<button id="edebitdirectButtonEdpg"
+				// 			style="background-size: cover; width: 236px; height: 51px; background-color:#333; border: none;"
+				// 			data-payment="edebitdirect"
+				// 			data-memo="'.$memo.'"
+				// 			class="edebitdirect-payment-button"
+				// 			data-price="'.$args['amt'].'"
+				// 			data-invoiceId="'.$order_id.'"
+				// 			data-server-url="'.$frame_url.'">Checkout Now
+				// 		</button>.',
+				// 'woocommerce')."</p>
+				// <script>
+    //                         ".$swal."
+				// </script>
 
-                        ".$iframe;
+    //                     ".$iframe;
 
 /*
                 $iframe = '<iframe src="'.$frame_url.'" style="height:450px;"></iframe>';

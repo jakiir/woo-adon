@@ -272,6 +272,7 @@ function init_edebitdirect_Payment_Gateway() {
 
         public function generate_form($order_id){
                 $order = new WC_Order( $order_id );
+                global $woocommerce;
 
                 $args = array(
                                 'amt'         => $order->order_total,
@@ -326,7 +327,7 @@ function init_edebitdirect_Payment_Gateway() {
                 error_reporting(E_ALL);
 
                 //API Url
-                $url = 'https://dev.edebitdirect.com/app/api/v1/check/';
+                $url = $domain;
 
                 //Initiate cURL.
                 $ch = curl_init($url);
@@ -349,8 +350,15 @@ function init_edebitdirect_Payment_Gateway() {
                 $jsonDataEncoded = json_encode($jsonData);
                 //echo $jsonDataEncoded; exit;
 
+                $vendor_id = $this->settings['vendor_id']; 
+                $callbackSecret = $this->settings['CallbackSecret'];
+                if(empty($vendor_id) || empty($callbackSecret)){
+                    $settings_url = admin_url('/admin.php?page=wc-settings&tab=checkout&section=edebitdirect');
+                    wp_die('Sorry, Your settings may not properly not configerd. <a href="'.$settings_url.'" target="_blank">Click to update</a>');
+                }
+
                 $header = array(
-                        "Authorization: apikey 407U7C7S1:a69c6194c10a0b7f343a53c3ab966d35523f0ea5",
+                        "Authorization: apikey {$vendor_id}:{$callbackSecret}",
                         "Content-Type: application/json",
                         "Cache-Control: no-cache"
                         );
@@ -369,104 +377,32 @@ function init_edebitdirect_Payment_Gateway() {
                 if($result === FALSE) {
                     die(curl_error($ch));
                 } else {
+                    $order_secr = get_post_meta($order_id, 'secr_edebitdirect', true);
+                    $secr_md5_edebitdirect = get_post_meta($order_id, 'secr_md5_edebitdirect', true);
+                    if($secr_md5_edebitdirect==md5($order_secr))
+                    {
+
+                        $order->update_status('completed');
+//                        $order->update_status('processing', __('Payment EXECUTED via edebitdirect', 'woocommerce'));
+                        $order->add_order_note( __('Payment edebitdirect Approved: Transaction ID'.$order->order_key, 'woocommerce') );
+                        //$woocommerce->cart->empty_cart();
+                        //wp_send_json( array( 'status' => 'success', 'data' => 'payment ok' ) );
+//                        wp_die('payment ok');
+
+                    }
+                    else
+                    {
+                        wp_die('payment hash fail');
+                    }
+
+                    //print_r($order);
+
                     $checkoutUrl = get_permalink(woocommerce_get_page_id('pay')).'order-received/'.$order_id.'/?key='.$order->order_key;
-                    //echo add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(woocommerce_get_page_id('pay'))));
                     echo "<script>window.location.href = '".$checkoutUrl."';</script>";
-                    //global $woocommerce;
-                //$woocommerce->cart->empty_cart();
+                    
                 }
 
                 curl_close($ch);
-                //die($frame_url);
-    //             $swal = "
-				// 	jQuery(function() {
-		  //               edebitdirect.initialize('".$this->settings['vendor_id']."',
-    // 		  		      function (paymentId) {
-				// 				location.reload();
-		  //   		        },
-    //     				    function () {
-
-				//             },
-				//             '',
-				//             null,
-				//             ".$test.",
-    //                         'Jak'
-				// 	    );
-					    
-				// 	});
-				// 	var lastHeight = 0;
-				// 	var resizeIFrameTimer = null;
-				// ";
-                /*
-                $('edebitdirectButton').trigger('click');
-                    function resizeIframe() {
-                        var obj = document.getElementById('edebitdirectFrame');
-                        if(lastHeight != obj.contentWindow.document.body.scrollHeight) {
-                            lastHeight = obj.contentWindow.document.body.scrollHeight;
-                            obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
-                        }
-                        if (resizeIFrameTimer == null) {
-                            //To handle angular resizes
-                            resizeIFrameTimer = setInterval(resizeIframe, 1000);
-                        }
-                    }
-                */
-                $iframe = '';//'<iframe id="edebitdirectFrame" style="display:none;width:100%;min-height:800px;border:none" frameborder="0" scrolling="no" onload="resizeIframe()"></iframe>';
-
-    //             return '<p>'.__('Thank you for your order, please click the button in
-    //             		<button id="edebitdirectButtonEdpg"
-				// 			style="background-size: cover; width: 236px; height: 51px; background-color:#333; border: none;"
-				// 			data-payment="edebitdirect"
-				// 			data-memo="'.$memo.'"
-				// 			class="edebitdirect-payment-button"
-				// 			data-price="'.$args['amt'].'"
-				// 			data-invoiceId="'.$order_id.'"
-				// 			data-server-url="'.$frame_url.'">Checkout Now
-				// 		</button>.',
-				// 'woocommerce')."</p>
-				// <script>
-    //                         ".$swal."
-				// </script>
-
-    //                     ".$iframe;
-
-/*
-                $iframe = '<iframe src="'.$frame_url.'" style="height:450px;"></iframe>';
-
-                $swal = "
-				jQuery(function() {
-					jQuery('body').on('click', '.swal2-close', function(){
-						location.reload();
-					});
-
-					jQuery( '.popup_open_edebitdirect' ).click(function() {
-						swal({
-							title: 'Payment via edebitdirect',
-							html: '<div class=\"edebitdirect_iframe_wrap\">".$iframe."</div>',
-							showConfirmButton : false,
-							closeOnConfirm: false,
-							showCloseButton:true,
-							customClass : 'edebitdirect_checkout_popup'
-						})
-				    });
-					swal({
-						title: 'Payment via edebitdirect',
-						html: '<div class=\"edebitdirect_iframe_wrap\">".$iframe."</div>',
-						showConfirmButton : false,
-						closeOnConfirm: false,
-						showCloseButton:true,
-						customClass : 'edebitdirect_checkout_popup'
-					});
-				});
-
-                ";
-                return '<p>'.__('Thank you for your order, please click the button in <button class="popup_open_edebitdirect button" frame_url="'.urlencode($frame_url).'">Pop-Up</button>.', 'woocommerce')."</p>
-
-                        <script>
-                            ".$swal."
-                        </script>
-                        ";
-*/
         }
 
 

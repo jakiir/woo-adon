@@ -296,12 +296,12 @@ function init_edebitdirect_Payment_Gateway() {
 
                 if($this->settings['test_mode']=='no')
                 {
-                    $domain = 'https://edebitdirect.com/app/api/v1/check';
+                    $domain = 'https://edebitdirect.com/app/api/v1/check/';
                     $test=0;
                 }
                 else
                 {
-                    $domain = 'https://dev.edebitdirect.com/app/api/v1/check';
+                    $domain = 'https://dev.edebitdirect.com/app/api/v1/check/';
                     $test=1;
                 }
 

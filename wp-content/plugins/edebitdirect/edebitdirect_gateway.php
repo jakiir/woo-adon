@@ -88,45 +88,4 @@ function woocommerce_loaded_edpg() {
     add_action('wp_enqueue_scripts', 'add_dist_files_edpg');
     add_action('admin_enqueue_scripts', 'add_dist_files_admin_edpg');
 }
-
-
-
-
-function get_List_Transfers_edpg(){
-        $url = 'api.edebitdirect/v1/transfer';
-
-        $params = array(
-          "client_id" => "6929afc0-2f7c-4ece-886b-f215fcc0d75e",
-        );
-
-
-        $ch = curl_init('https://'.$url);
-        curl_setopt ($ch, CURLOPT_HEADER, 0);
-        curl_setopt ($ch, CURLOPT_REFERER, 'https://'.$url);
-        curl_setopt ($ch, CURLOPT_POST, true);
-        curl_setopt ($ch, CURLOPT_POSTFIELDS, $params);
-        curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-
-        $result = curl_exec($ch);
-        return $result;
-}
-
-
-function get_transfers_edebitdirect_func()
-{
-    $edebitdirect = new edebitdirect();
-    $type = $_POST['file_type'];
-    $res = $edebitdirect->get_history_edebitdirect($type);
-    wp_die(json_encode(array('answ'=>$res)));
-}
-
-add_action('wp_ajax_get_transfers_edebitdirect', 'get_transfers_edebitdirect_func');
-add_action('wp_ajax_nopriv_get_transfers_edebitdirect', 'get_transfers_edebitdirect_func');
-
-
-
-
 ?>

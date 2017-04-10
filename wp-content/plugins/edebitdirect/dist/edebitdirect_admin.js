@@ -1,4 +1,4 @@
-jQuery( document ).ready(function() {
+/*jQuery( document ).ready(function() {
     jQuery('.export_edebitdirect').click(function(event) {
         event.preventDefault();
         type = jQuery(this).attr('rel');
@@ -35,4 +35,4 @@ jQuery( document ).ready(function() {
         });
         
     });
-});
+});*/

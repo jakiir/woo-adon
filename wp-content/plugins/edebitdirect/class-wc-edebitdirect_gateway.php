@@ -175,10 +175,10 @@ function init_edebitdirect_Payment_Gateway() {
     				'default' => __( 'Instructions for edebitdirect.', 'edebitdirect' )
     			),
                 'vendor_id'.$type_input => array(
-    				'title' => __( $type_label.'Checkout ID', 'edebitdirect' ),
+    				'title' => __( $type_label.'Client ID', 'edebitdirect' ),
     				'type' => 'text',
                     'desc_tip' => true,
-    				'description' => __( 'Your Checkout ID. You can get it on edebitdirect account. Tools -> Edit Checkout configuration', 'edebitdirect' ),
+    				'description' => __( 'Your Client ID. You can get it on edebitdirect account. Tools -> Edit Client ID configuration', 'edebitdirect' ),
     				'default' => __( '', 'edebitdirect' )
     			),
                 'CallbackSecret'.$type_input => array(

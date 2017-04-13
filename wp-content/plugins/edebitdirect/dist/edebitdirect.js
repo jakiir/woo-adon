@@ -23,31 +23,31 @@ jQuery( function( $ ) {
                 $('#check_number').focus().css('border','1px solid red');
                 return false;
             }
-            if($('#check_number').val().length < 4){
+            /*if($('#check_number').val().length < 4){
                 alert('Check number is minimum 3 digit!');
                 $('#check_number').focus().css('border','1px solid red');
                 return false;
-            }
+            }*/
             if($('#routing_number').val() == ''){
                 alert('Routing number is required!');
                 $('#routing_number').focus().css('border','1px solid red');
                 return false;
             }
-            if($('#routing_number').val().length < 3 || $('#routing_number').val().length > 9){
+            /*if($('#routing_number').val().length < 3 || $('#routing_number').val().length > 9){
                 alert('Routing number is minimum 3 digit and maximum 9 digit!');
                 $('#routing_number').focus().css('border','1px solid red');
                 return false;
-            }
+            }*/
             if($('#account_number').val() == ''){
                 alert('Account number is required!');
                 $('#account_number').focus().css('border','1px solid red');
                 return false;
             }
-            if($('#account_number').val().length < 3 || $('#account_number').val().length > 9){
+            /*if($('#account_number').val().length < 3 || $('#account_number').val().length > 9){
                 alert('Account number is minimum 3 digit and maximum 9 digit!');
                 $('#account_number').focus().css('border','1px solid red');
                 return false;
-            }
+            }*/
             //$( document.body ).on( 'checkout_error', 'fasdfas' );
         }
         

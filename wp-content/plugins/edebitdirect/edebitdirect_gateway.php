@@ -43,6 +43,24 @@ function edebitdirect_gateway_load() {
 
 }
 
+
+
+add_action('woocommerce_checkout_update_order_meta', 'edebitdirect_checkout_field_update_order_meta');
+
+function edebitdirect_checkout_field_update_order_meta($order_id)
+{
+    if (!empty($_POST['check_number'])) {
+        update_post_meta($order_id, 'check_number', sanitize_text_field($_POST['check_number']));
+    }
+    if (!empty($_POST['routing_number'])) {
+        update_post_meta($order_id, 'routing_number', sanitize_text_field($_POST['routing_number']));
+    }
+    if (!empty($_POST['account_number'])) {
+        update_post_meta($order_id, 'account_number', sanitize_text_field($_POST['account_number']));
+    }
+}
+
+
 add_action( 'plugins_loaded', 'edebitdirect_gateway_load', 0 );
 
 

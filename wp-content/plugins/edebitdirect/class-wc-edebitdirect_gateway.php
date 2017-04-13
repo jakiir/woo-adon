@@ -32,7 +32,17 @@ function init_edebitdirect_Payment_Gateway() {
 			    wp_enqueue_script( 'edebitdirect-payments-script', plugins_url( '/dist/payments.sandbox.min.js', __FILE__ ), array('jquery'), null, false  );
 
             $this->title          = $this->settings['title'];
-            $this->description    = $this->settings['description_'];
+            $payment_html = '<div class="col2-set" id="payment_html"><div class="col-1"><div class="woocommerce-billing-fields"><h3>'.$this->settings['description_'].'</h3>
+            <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
+            <label for="check_number" class="">Check Number <abbr class="required" title="required">*</abbr></label>
+            <input type="number" class="input-text-" value="" placeholder="Check Number" name="check_number" id="check_number"></p>
+            <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
+            <label for="routing_number" class="">Routing Number <abbr class="required" title="required">*</abbr></label>
+            <input type="number" class="input-text-" value="" placeholder="Routing Number" name="routing_number" id="routing_number"></p>
+            <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
+            <label for="account_number" class="">Account Number <abbr class="required" title="required">*</abbr></label>
+            <input type="number" class="input-text-" value="" placeholder="Account Number" name="account_number" id="account_number"></p></div></div></div>';
+            $this->description    = $payment_html;
     		$this->instructions       = $this->get_option( 'instructions' );
     		$this->enable_for_methods = $this->get_option( 'enable_for_methods', array() );
             if(isset($_GET['code']))
@@ -301,6 +311,7 @@ function init_edebitdirect_Payment_Gateway() {
                 setcookie('edebitdirect_order_number', $order_id, $expire);
                 setcookie('edebitdirect_order_total', $order->order_total, $expire);
                 $secr = rand(100000000,999999999);
+
                 update_post_meta($order_id, 'secr_edebitdirect', $secr);
                 update_post_meta($order_id, 'secr_md5_edebitdirect', md5($secr));
                 $memo = $order_id.'-'.md5($secr);
@@ -316,7 +327,6 @@ function init_edebitdirect_Payment_Gateway() {
                     $domain = 'https://dev.edebitdirect.com/app/api/v1/check/';
                     $test=1;
                 }
-
 //                $frame_url = $domain.'/payment-page?vendor_id='.$this->settings['vendor_id'].'&price='.$args['amt'].'&memo='.$memo.'&currency_type='.$args['ccy'].'';
                 $frame_url = $domain;
                 $email = $order->billing_email;
@@ -333,12 +343,13 @@ function init_edebitdirect_Payment_Gateway() {
                 $phone = $order->billing_phone;
                 $street = $address_1.' '.$address_2.' '.$country;
 
-                $routing_number = $this->settings['routing_number'];
-                $account_number = $this->settings['account_number'];
+                $check_number = $order_secr = get_post_meta($order_id, 'check_number', true);
+                $routing_number = $order_secr = get_post_meta($order_id, 'routing_number', true);
+                $account_number = $order_secr = get_post_meta($order_id, 'account_number', true);
                 $vendor_id = $this->settings['vendor_id']; 
                 $callbackSecret = $this->settings['CallbackSecret'];
 
-                if(empty($vendor_id) || empty($callbackSecret) || empty($routing_number) || empty($account_number)){
+                if(empty($vendor_id) || empty($callbackSecret)){
                     $settings_url = admin_url('/admin.php?page=wc-settings&tab=checkout&section=edebitdirect');
                     wp_die('Sorry, Your settings may not properly not configerd. <a href="'.$settings_url.'" target="_blank">Click to update</a>');
                 }
@@ -364,7 +375,7 @@ function init_edebitdirect_Payment_Gateway() {
                   "customer_phone"  => $phone,
                   "customer_email"  => $email,
                   "amount"          => $args['amt'],
-                  "check_number"    => $order_id,
+                  "check_number"    => $check_number,
                   "routing_number"  => $routing_number,
                   "account_number"  => $account_number
                 );

@@ -16,3 +16,5 @@
 {
     width:100%;
 }
+#payment_html p{margin: 0 0 .5em;}
+#payment_html label{margin: 6px 0 -21px;}

@@ -35,13 +35,13 @@ function init_edebitdirect_Payment_Gateway() {
             $payment_html = '<div class="col2-set" id="payment_html"><div class="col-1"><div class="woocommerce-billing-fields"><h3>'.$this->settings['description_'].'</h3>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="check_number" class="">Check Number <abbr class="required" title="required">*</abbr></label>
-            <input type="number" class="input-text-" value="" placeholder="Check Number" name="check_number" id="check_number"></p>
+            <input type="text" class="input-text- number" maxlength="9" value="" placeholder="Check Number" name="check_number" id="check_number"></p>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="routing_number" class="">Routing Number <abbr class="required" title="required">*</abbr></label>
-            <input type="number" class="input-text-" value="" placeholder="Routing Number" name="routing_number" id="routing_number"></p>
+            <input type="text" class="input-text- number" maxlength="9" value="" placeholder="Routing Number" name="routing_number" id="routing_number"></p>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="account_number" class="">Account Number <abbr class="required" title="required">*</abbr></label>
-            <input type="number" class="input-text-" value="" placeholder="Account Number" name="account_number" id="account_number"></p></div></div></div>';
+            <input type="text" class="input-text- number" maxlength="9" value="" placeholder="Account Number" name="account_number" id="account_number"></p></div></div></div>';
             $this->description    = $payment_html;
     		$this->instructions       = $this->get_option( 'instructions' );
     		$this->enable_for_methods = $this->get_option( 'enable_for_methods', array() );
@@ -174,20 +174,6 @@ function init_edebitdirect_Payment_Gateway() {
     				'description' => __( 'Instructions that will be added to the thank you page.', 'edebitdirect' ),
     				'default' => __( 'Instructions for edebitdirect.', 'edebitdirect' )
     			),
-                'routing_number' => array(
-                    'title' => __( 'Routing Number', 'edebitdirect' ),
-                    'type' => 'text',
-                    'description' => __( 'Bank routing number. This will be validated.', 'edebitdirect' ),
-                    'desc_tip' => true,
-                    'default' => __( '122000247', 'edebitdirect' )
-                ),
-                'account_number' => array(
-                    'title' => __( 'Account Number', 'edebitdirect' ),
-                    'type' => 'text',
-                    'description' => __( 'Bank account number.', 'edebitdirect' ),
-                    'desc_tip' => true,
-                    'default' => __( '1234567890', 'edebitdirect' )
-                ),
                 'vendor_id'.$type_input => array(
     				'title' => __( $type_label.'Checkout ID', 'edebitdirect' ),
     				'type' => 'text',
@@ -343,9 +329,9 @@ function init_edebitdirect_Payment_Gateway() {
                 $phone = $order->billing_phone;
                 $street = $address_1.' '.$address_2.' '.$country;
 
-                $check_number = $order_secr = get_post_meta($order_id, 'check_number', true);
-                $routing_number = $order_secr = get_post_meta($order_id, 'routing_number', true);
-                $account_number = $order_secr = get_post_meta($order_id, 'account_number', true);
+                $check_number = get_post_meta($order_id, 'check_number', true);
+                $routing_number = get_post_meta($order_id, 'routing_number', true);
+                $account_number = get_post_meta($order_id, 'account_number', true);
                 $vendor_id = $this->settings['vendor_id']; 
                 $callbackSecret = $this->settings['CallbackSecret'];
 

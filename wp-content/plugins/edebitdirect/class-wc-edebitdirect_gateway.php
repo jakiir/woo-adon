@@ -59,6 +59,9 @@ function init_edebitdirect_Payment_Gateway() {
             add_action('woocommerce_update_options_payment_gateways', array(&$this, 'process_admin_options'));
             add_action('woocommerce_receipt_'. $this->id, array( $this, 'receipt_page' ) );
 
+            add_action( 'woocommerce_order_details_after_order_table', array($this, 'eDebitDirect_display_cust_order_meta'));
+            add_action( 'woocommerce_before_order_itemmeta', array( $this, 'order_completion_before_order_itemmeta'));
+
 
             // Actions.
             if ( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) )
@@ -279,6 +282,7 @@ function init_edebitdirect_Payment_Gateway() {
 
 
         public function generate_form($order_id){
+
                 $order = new WC_Order( $order_id );
                 global $woocommerce;
 
@@ -384,6 +388,7 @@ function init_edebitdirect_Payment_Gateway() {
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
                 //Execute the request
                 $result = curl_exec($ch);
+
                    $check_exp = explode('"check":', $result);
                    if(!empty($check_exp[1])){
                         $jsonCode = '{"check":'.$check_exp[1];
@@ -405,6 +410,10 @@ function init_edebitdirect_Payment_Gateway() {
                 if($result === FALSE) {
                     die(curl_error($ch));
                 } else {
+                    $location_exp = explode('Location: ', $result);
+                    if(!empty($location_exp[1])){
+                        update_post_meta($order_id, 'edebitdirect_location', trim($location_exp[1]));
+                    }
                     $order_secr = get_post_meta($order_id, 'secr_edebitdirect', true);
                     $secr_md5_edebitdirect = get_post_meta($order_id, 'secr_md5_edebitdirect', true);
                     if($secr_md5_edebitdirect==md5($order_secr))
@@ -431,6 +440,120 @@ function init_edebitdirect_Payment_Gateway() {
                 }
 
                 curl_close($ch);
+        }
+
+
+        public function eDebitDirect_display_cust_order_meta($order){
+            $edebitdirect_location = get_post_meta( $order->id, 'edebitdirect_location', true );
+            if(!empty($edebitdirect_location)){
+                ini_set('display_errors', 1);
+                ini_set('display_errors','on');
+                ini_set('display_startup_errors', 1);
+                error_reporting(E_ALL);
+
+                //API Url
+                $url = trim($edebitdirect_location);
+
+                //Initiate cURL.
+                $ch = curl_init($url);
+                $vendor_id = $this->settings['vendor_id']; 
+                $callbackSecret = $this->settings['CallbackSecret'];
+
+                $header = array(
+                        "Authorization: apikey {$vendor_id}:{$callbackSecret}",
+                        "Content-Type: application/json",
+                        "Cache-Control: no-cache"
+                        );
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+                //Execute the request
+                $result = curl_exec($ch);
+                $edebit_data = json_decode($result, true); ?>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th scope="row">eDebitDirect Customer Name:</th>
+                                <td>
+                                    <?php echo $edebit_data['customer_name']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">eDebitDirect Reference Number:</th>
+                                <td>
+                                    <?php echo $edebit_data['reference_number']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">eDebitDirect Created Date</th>
+                                <td>
+                                    <?php echo $edebit_data['created_date']; ?>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                <?php
+            }
+            
+        }
+
+        public function order_completion_before_order_itemmeta( $item_id ){
+            global $wpdb;
+
+             $orderId = get_the_ID();
+             $edebitdirect_location = get_post_meta( $orderId, 'edebitdirect_location', true );
+            if(!empty($edebitdirect_location)){
+                ini_set('display_errors', 1);
+                ini_set('display_errors','on');
+                ini_set('display_startup_errors', 1);
+                error_reporting(E_ALL);
+
+                //API Url
+                $url = trim($edebitdirect_location);
+
+                //Initiate cURL.
+                $ch = curl_init($url);
+                $vendor_id = $this->settings['vendor_id']; 
+                $callbackSecret = $this->settings['CallbackSecret'];
+
+                $header = array(
+                        "Authorization: apikey {$vendor_id}:{$callbackSecret}",
+                        "Content-Type: application/json",
+                        "Cache-Control: no-cache"
+                        );
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+                //Execute the request
+                $result = curl_exec($ch);
+                $edebit_data = json_decode($result, true); ?>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td scope="row" colspan="2">eDebitDirect Customer Name:</td>
+                                <td>
+                                    <?php echo $edebit_data['customer_name']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="row" colspan="2">eDebitDirect Reference Number:</td>
+                                <td>
+                                    <?php echo $edebit_data['reference_number']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="row" colspan="2">eDebitDirect Created Date</td>
+                                <td>
+                                    <?php echo $edebit_data['created_date']; ?>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                <?php
+            }
+
         }
 
     }

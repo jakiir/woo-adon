@@ -5,7 +5,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 //API Url
-$url = 'https://dev.edebitdirect.com/app/api/v1/check/';
+$url = 'https://www.edebitdirect.com/app/api/v1/check/';
 
 //Initiate cURL.
 $ch = curl_init($url);

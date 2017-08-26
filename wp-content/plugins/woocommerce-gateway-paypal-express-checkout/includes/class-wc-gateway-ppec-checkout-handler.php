@@ -37,6 +37,7 @@ class WC_Gateway_PPEC_Checkout_Handler {
 		add_action( 'init', array( $this, 'init' ) );
 		add_filter( 'the_title', array( $this, 'endpoint_page_titles' ) );
 		add_action( 'woocommerce_checkout_init', array( $this, 'checkout_init' ) );
+		add_filter( 'woocommerce_default_address_fields', array( $this, 'filter_default_address_fields' ) );
 		add_filter( 'woocommerce_billing_fields', array( $this, 'filter_billing_fields' ) );
 		add_action( 'woocommerce_checkout_process', array( $this, 'copy_checkout_details_to_post' ) );
 
@@ -69,7 +70,7 @@ class WC_Gateway_PPEC_Checkout_Handler {
 	 * @return string
 	 */
 	public function endpoint_page_titles( $title ) {
-		if ( is_main_query() && in_the_loop() && is_page() && is_checkout() && $this->has_active_session() ) {
+		if ( ! is_admin() && is_main_query() && in_the_loop() && is_page() && is_checkout() && $this->has_active_session() ) {
 			$title = __( 'Confirm your PayPal order', 'woocommerce-gateway-paypal-express-checkout' );
 			remove_filter( 'the_title', array( $this, 'endpoint_page_titles' ) );
 		}
@@ -103,28 +104,49 @@ class WC_Gateway_PPEC_Checkout_Handler {
 	}
 
 	/**
+	 * If the cart doesn't need shipping at all, don't require the address fields
+	 * (this is unique to PPEC). This is one of two places we need to filter fields.
+	 * See also filter_billing_fields below.
+	 *
+	 * @since 1.2.1
+	 * @param $fields array
+	 *
+	 * @return array
+	 */
+	public function filter_default_address_fields( $fields ) {
+		if ( method_exists( WC()->cart, 'needs_shipping' ) && ! WC()->cart->needs_shipping() ) {
+			$not_required_fields = array( 'address_1', 'city', 'state', 'postcode', 'country' );
+			foreach ( $not_required_fields as $not_required_field ) {
+				if ( array_key_exists( $not_required_field, $fields ) ) {
+					$fields[ $not_required_field ]['required'] = false;
+				}
+			}
+		}
+
+		return $fields;
+
+	}
+
+	/**
 	 * Since PayPal doesn't always give us the phone number for the buyer, we need to make
-	 * that field not required. And if the cart doesn't need shipping at all, don't require
-	 * the address fields either (this is unique to PPEC)
+	 * that field not required. Note that core WooCommerce adds the phone field after calling
+	 * get_default_address_fields, so the woocommerce_default_address_fields cannot
+	 * be used to make the phone field not required.
+	 *
+	 * This is one of two places we need to filter fields. See also filter_default_address_fields above.
 	 *
 	 * @since 1.2.0
+	 * @version 1.2.1
 	 * @param $billing_fields array
 	 *
 	 * @return array
 	 */
 	public function filter_billing_fields( $billing_fields ) {
-		if ( array_key_exists( 'billing_phone', $billing_fields ) ) {
-			$billing_fields['billing_phone']['required'] = false;
-		};
+		$require_phone_number = wc_gateway_ppec()->settings->require_phone_number;
 
-		if ( ! WC()->cart->needs_shipping() ) {
-			$not_required_fields = array( 'billing_address_1', 'billing_city', 'billing_state', 'billing_postcode' );
-			foreach ( $not_required_fields as $not_required_field ) {
-				if ( array_key_exists( $not_required_field, $billing_fields ) ) {
-					$billing_fields[ $not_required_field ]['required'] = false;
-				}
-			}
-		}
+		if ( array_key_exists( 'billing_phone', $billing_fields ) ) {
+			$billing_fields['billing_phone']['required'] = 'yes' === $require_phone_number;
+		};
 
 		return $billing_fields;
 	}
@@ -207,7 +229,9 @@ class WC_Gateway_PPEC_Checkout_Handler {
 			<?php endif; ?>
 
 			<?php if ( ! empty( $checkout_details->payer_details->phone_number ) ) : ?>
-				<li><strong><?php _e( 'Tel:', 'woocommerce-gateway-paypal-express-checkout' ) ?></strong> <?php echo esc_html( $checkout_details->payer_details->phone_number ); ?></li>
+				<li><strong><?php _e( 'Phone:', 'woocommerce-gateway-paypal-express-checkout' ) ?></strong> <?php echo esc_html( $checkout_details->payer_details->phone_number ); ?></li>
+			<?php elseif ( 'yes' === wc_gateway_ppec()->settings->require_phone_number ) : ?>
+				<li><?php $fields = WC()->checkout->get_checkout_fields( 'billing' ); woocommerce_form_field( 'billing_phone', $fields['billing_phone'], WC()->checkout->get_value( 'billing_phone' ) ); ?></li>
 			<?php endif; ?>
 		</ul>
 		<?php
@@ -273,9 +297,10 @@ class WC_Gateway_PPEC_Checkout_Handler {
 			return;
 		}
 
-		if ( ! WC()->cart->needs_shipping() ) {
+		if ( ! WC_Gateway_PPEC_Plugin::needs_shipping() ) {
 			return;
 		}
+
 		?>
 		<h3><?php _e( 'Shipping details', 'woocommerce-gateway-paypal-express-checkout' ); ?></h3>
 		<?php
@@ -300,6 +325,14 @@ class WC_Gateway_PPEC_Checkout_Handler {
 			return array();
 		}
 
+		$phone = '';
+
+		if ( ! empty( $checkout_details->payer_details->phone_number ) ) {
+			$phone = $checkout_details->payer_details->phone_number;
+		} elseif ( 'yes' === wc_gateway_ppec()->settings->require_phone_number && ! empty( $_POST['billing_phone'] ) ) {
+			$phone = wc_clean( $_POST['billing_phone'] );
+		}
+
 		return array(
 			'first_name' => $checkout_details->payer_details->first_name,
 			'last_name'  => $checkout_details->payer_details->last_name,
@@ -310,7 +343,7 @@ class WC_Gateway_PPEC_Checkout_Handler {
 			'state'      => $checkout_details->payer_details->billing_address ? $checkout_details->payer_details->billing_address->getState() : '',
 			'postcode'   => $checkout_details->payer_details->billing_address ? $checkout_details->payer_details->billing_address->getZip() : '',
 			'country'    => $checkout_details->payer_details->billing_address ? $checkout_details->payer_details->billing_address->getCountry() : $checkout_details->payer_details->country,
-			'phone'      => $checkout_details->payer_details->phone_number,
+			'phone'      => $phone,
 			'email'      => $checkout_details->payer_details->email,
 		);
 	}
@@ -402,9 +435,11 @@ class WC_Gateway_PPEC_Checkout_Handler {
 	}
 
 	/**
-	 * Maybe disable other gateways.
+	 * Maybe disable this or other gateways.
 	 *
 	 * @since 1.0.0
+	 * @version 1.2.1
+	 *
 	 * @param array $gateways Available gateways
 	 *
 	 * @return array Available gateways
@@ -421,6 +456,14 @@ class WC_Gateway_PPEC_Checkout_Handler {
 		// If using PayPal standard (this is admin choice) we don't need to also show PayPal EC on checkout.
 		} elseif ( is_checkout() && ( isset( $gateways['paypal'] ) || 'no' === wc_gateway_ppec()->settings->mark_enabled ) ) {
 			unset( $gateways['ppec_paypal'] );
+		}
+
+		// If the cart total is zero (e.g. because of a coupon), don't allow this gateway.
+		// We do this only if we're on the checkout page (is_checkout), but not on the order-pay page (is_checkout_pay_page)
+		if ( is_cart() || ( is_checkout() && ! is_checkout_pay_page() ) ) {
+			if ( isset( $gateways['ppec_paypal'] ) && ( 0 >= WC()->cart->total ) ) {
+				unset( $gateways['ppec_paypal'] );
+			}
 		}
 
 		return $gateways;
@@ -753,20 +796,20 @@ class WC_Gateway_PPEC_Checkout_Handler {
 			}
 
 			$paymentAction = $settings->get_paymentaction();
-			if ( 'sale' == $paymentAction ) {
-				$txn = array(
-					'txnID'           => $payment_details->payments[0]->transaction_id,
-					'amount'          => $order->get_total(),
-					'refunded_amount' => 0
-				);
-				if ( 'Completed' == $payment_details->payments[0]->payment_status ) {
-					$txn['status'] = 'Completed';
-				} else {
-					$txn['status'] = $payment_details->payments[0]->payment_status . '_' . $payment_details->payments[0]->pending_reason;
-				}
-				$txnData['refundable_txns'][] = $txn;
 
-			} elseif ( 'authorization' == $paymentAction ) {
+			$txn = array(
+				'txnID'           => $payment_details->payments[0]->transaction_id,
+				'amount'          => $order->get_total(),
+				'refunded_amount' => 0
+			);
+			if ( 'Completed' == $payment_details->payments[0]->payment_status ) {
+				$txn['status'] = 'Completed';
+			} else {
+				$txn['status'] = $payment_details->payments[0]->payment_status . '_' . $payment_details->payments[0]->pending_reason;
+			}
+			$txnData['refundable_txns'][] = $txn;
+
+			if ( 'authorization' == $paymentAction ) {
 				$txnData['auth_status'] = 'NotCompleted';
 			}
 
@@ -794,13 +837,9 @@ class WC_Gateway_PPEC_Checkout_Handler {
 	public function handle_payment_response( $order, $payment ) {
 		// Store meta data to order
 		$old_wc = version_compare( WC_VERSION, '3.0', '<' );
-		if ( $old_wc ) {
-			update_post_meta( $order->id, '_paypal_status', strtolower( $payment->payment_status ) );
-			update_post_meta( $order->id, '_transaction_id', $payment->transaction_id );
-		} else {
-			$order->update_meta_data( '_paypal_status', strtolower( $payment->payment_status ) );
-			$order->update_meta_data( '_transaction_id', $payment->transaction_id );
-		}
+
+		update_post_meta( $old_wc ? $order->id : $order->get_id(), '_paypal_status', strtolower( $payment->payment_status ) );
+		update_post_meta( $old_wc ? $order->id : $order->get_id(), '_transaction_id', $payment->transaction_id );
 
 		// Handle $payment response
 		if ( 'completed' === strtolower( $payment->payment_status ) ) {
@@ -812,9 +851,11 @@ class WC_Gateway_PPEC_Checkout_Handler {
 				$order->update_status( 'on-hold', sprintf( __( 'Payment pending (%s).', 'woocommerce-gateway-paypal-express-checkout' ), $payment->pending_reason ) );
 			}
 			if ( $old_wc ) {
-				$order->reduce_order_stock();
+				if ( ! get_post_meta( $order->id, '_order_stock_reduced', true ) ) {
+					$order->reduce_order_stock();
+				}
 			} else {
-				wc_reduce_stock_levels( $order->get_id() );
+				wc_maybe_reduce_stock_levels( $order->get_id() );
 			}
 		}
 	}

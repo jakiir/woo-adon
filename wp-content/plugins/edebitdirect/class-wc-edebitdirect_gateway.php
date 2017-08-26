@@ -367,7 +367,8 @@ function init_edebitdirect_Payment_Gateway() {
                   "amount"          => $args['amt'],
                   "check_number"    => $check_number,
                   "routing_number"  => $routing_number,
-                  "account_number"  => $account_number
+                  "account_number"  => $account_number,
+				  "is_customer_agree" => true
                 );
 
                 $jsonDataEncoded = json_encode($jsonData);

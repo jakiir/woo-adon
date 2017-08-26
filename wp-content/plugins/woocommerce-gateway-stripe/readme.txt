@@ -1,9 +1,9 @@
 === WooCommerce Stripe Payment Gateway ===
-Contributors: automattic, woothemes, mikejolley, akeda, royho, mattyza, slash1andy, woosteve, spraveenitpro, mikedmoore, fernashes, shellbeezy, danieldudzic, mikaey, dsmithweb, fullysupportedphil, corsonr, deskroid, luminus, tiagonoronha, zandyring
+Contributors: automattic, woothemes, mikejolley, akeda, royho, mattyza, slash1andy, woosteve, spraveenitpro, mikedmoore, fernashes, shellbeezy, danieldudzic, mikaey, dsmithweb, fullysupportedphil, corsonr, deskroid, luminus, tiagonoronha, zandyring, bor0
 Tags: credit card, stripe, woocommerce
 Requires at least: 4.4
-Tested up to: 4.7.2
-Stable tag: 3.1.6
+Tested up to: 4.8
+Stable tag: 3.2.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -95,6 +95,39 @@ If you get stuck, you can ask for help in the Plugin Forum.
 
 == Changelog ==
 
+= 3.2.3 - 2017-08-23 =
+* Fix - Apple Pay action hook with wrong parameter causing errors.
+
+= 3.2.2 - 2017-07-11 =
+* Fix - Apple Pay button displaying in non Safari browser.
+* Fix - Apple Pay with coupon not applying to total.
+
+= 3.2.1 =
+* Fix - Discounts were not applying to total with Apple Pay.
+
+= 3.2.0 =
+* Fix - Authorized first orders were not able to be refund.
+* Fix - Payment Request not honoring different shipping address in certain cases.
+* Fix - In certain Chrome versions, states are not abbreviated causing shipping validation issues with Payment Request API.
+* Add - Support for Dynamic Pricing.
+
+= 3.1.9 =
+* Fix - Handle a subscription renewal failed payment order correctly to prevent orders going into onhold status.
+* Fix - Auto accept terms for Payment Request API to prevent blocker for the checkout.
+* Fix - Add payment method via Stripe checkout button showed pricing.
+* Fix - When Stripe customer id is no longer linked to Stripe account, customer not found can happen.
+* Fix - On Subscription failed payment, new payment info not updating causing failed payments for recurring charges.
+* Add - Action hook to manipulate process response from API "wc_gateway_stripe_process_response".
+* Add - Apple Pay compatibility with WooCommerce Sequential Numbers Pro.
+
+= 3.1.8 =
+* Fix - Legacy < WC 3.0 stripe checkout file reference link name causing file not found.
+
+= 3.1.7 =
+* Fix - Additional WC 3.0 compatibility with subscriptions addons.
+* Fix - Retry failed subscription payments with customer ID.
+* Add - Site URL to metadata when charging subscription orders for reference.
+
 = 3.1.6 =
 * Fix - TypeError issues on single product page when using Apple Pay on Desktop.
 * Fix - In certain case, Apple Pay on single product page does not show shipping info.
@@ -128,6 +161,7 @@ If you get stuck, you can ask for help in the Plugin Forum.
 = 3.1.0 =
 * New - Apple Pay Support.
 * New - Add Google Payment Request API.
+* New - Minimum PHP 5.6.
 
 = 3.0.7 =
 * New - Option to allow/disallow remember me on Stripe checkout modal.
@@ -176,8 +210,8 @@ If you get stuck, you can ask for help in the Plugin Forum.
 
 == Upgrade Notice ==
 
-= 3.1.6 =
-* Fix - TypeError issues on single product page when using Apple Pay on Desktop.
-* Fix - In certain case, Apple Pay on single product page does not show shipping info.
-* Fix - Use store's base location to show/hide accepted credit cards instead of currency.
-* Fix - Unsupported product type when a variable product is added with Apple Pay.
+= 3.2.0 =
+* Fix - Authorized first orders were not able to be refund.
+* Fix - Payment Request not honoring different shipping address in certain cases.
+* Fix - In certain Chrome versions, states are not abbreviated causing shipping validation issues with Payment Request API.
+* Add - Support for Dynamic Pricing.

@@ -32,7 +32,7 @@ function init_edebitdirect_Payment_Gateway() {
 			    wp_enqueue_script( 'edebitdirect-payments-script', plugins_url( '/dist/payments.sandbox.min.js', __FILE__ ), array('jquery'), null, false  );
 
             $this->title          = $this->settings['title'];
-            $payment_html = '<div class="col2-set" id="payment_html"><div class="col-1"><div class="woocommerce-billing-fields"><h3>'.$this->settings['description_'].'</h3>
+            $payment_html = '<div class="col3-set" id="payment_html"><div class="col-1"><div class="woocommerce-billing-fields"><h3>'.$this->settings['description_'].'</h3>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="check_number" class="">Check Number <abbr class="required" title="required">*</abbr></label>
             <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Check Number" name="check_number" id="check_number"></p>
@@ -41,7 +41,9 @@ function init_edebitdirect_Payment_Gateway() {
             <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Routing Number" name="routing_number" id="routing_number"></p>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="account_number" class="">Account Number <abbr class="required" title="required">*</abbr></label>
-            <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Account Number" name="account_number" id="account_number"></p></div></div></div>';
+            <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Account Number" name="account_number" id="account_number"></p>
+			<p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">			
+			<input type="checkbox" style="float:left;margin:6px 6px 82px 6px;" class="" value="yes" name="certify_edebit" id="certify_edebit"><label style="color:orangered;" for="certify_edebit" class="">I certify that I am the authorized account holder for this bank account and hereby authorize the processing of this single draft payment payable to: Grand Traverse Holding LLC <abbr class="required" title="required">*</abbr></label></p></div></div></div>';
             $this->description    = $payment_html;
     		$this->instructions       = $this->get_option( 'instructions' );
     		$this->enable_for_methods = $this->get_option( 'enable_for_methods', array() );
@@ -367,7 +369,8 @@ function init_edebitdirect_Payment_Gateway() {
                   "amount"          => $args['amt'],
                   "check_number"    => $check_number,
                   "routing_number"  => $routing_number,
-                  "account_number"  => $account_number
+                  "account_number"  => $account_number,
+				  "is_customer_agree" => true
                 );
 
                 $jsonDataEncoded = json_encode($jsonData);

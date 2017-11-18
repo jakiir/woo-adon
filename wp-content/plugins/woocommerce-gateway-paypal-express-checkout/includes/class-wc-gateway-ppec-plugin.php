@@ -361,12 +361,40 @@ class WC_Gateway_PPEC_Plugin {
 	 * @return array Plugin action links
 	 */
 	public function plugin_action_links( $links ) {
-		$setting_url = $this->get_admin_setting_link();
+		$plugin_links = array();
 
-		$plugin_links = array(
-			'<a href="' . esc_url( $setting_url ) . '">' . esc_html__( 'Settings', 'woocommerce-gateway-paypal-express-checkout' ) . '</a>',
-			'<a href="https://docs.woocommerce.com/document/paypal-express-checkout/">' . esc_html__( 'Docs', 'woocommerce-gateway-paypal-express-checkout' ) . '</a>',
-		);
+		if ( $this->_bootstrapped ) {
+			$setting_url = $this->get_admin_setting_link();
+			$plugin_links[] = '<a href="' . esc_url( $setting_url ) . '">' . esc_html__( 'Settings', 'woocommerce-gateway-paypal-express-checkout' ) . '</a>';
+		}
+
+		$plugin_links[] = '<a href="https://docs.woocommerce.com/document/paypal-express-checkout/">' . esc_html__( 'Docs', 'woocommerce-gateway-paypal-express-checkout' ) . '</a>';
+
 		return array_merge( $plugin_links, $links );
+	}
+
+	/**
+	 * Check if shipping is needed for PayPal. This only checks for virtual products (#286),
+	 * but skips the check if there are no shipping methods enabled (#249).
+	 *
+	 * @since 1.4.1
+	 * @version 1.4.1
+	 *
+	 * @return bool
+	 */
+	public static function needs_shipping() {
+		$cart_contents  = WC()->cart->cart_contents;
+		$needs_shipping = false;
+
+		if ( ! empty( $cart_contents ) ) {
+			foreach ( $cart_contents as $cart_item_key => $values ) {
+				if ( $values['data']->needs_shipping() ) {
+					$needs_shipping = true;
+					break;
+				}
+			}
+		}
+
+		return apply_filters( 'woocommerce_cart_needs_shipping', $needs_shipping );
 	}
 }

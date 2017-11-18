@@ -42,7 +42,7 @@ function init_edebitdirect_Payment_Gateway() {
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="account_number" class="">Account Number <abbr class="required" title="required">*</abbr></label>
             <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Account Number" name="account_number" id="account_number"></p>
-			<p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">			
+			<p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
 			<input type="checkbox" style="float:left;margin:6px 6px 82px 6px;" class="" value="yes" name="certify_edebit" id="certify_edebit"><label style="color:orangered;" for="certify_edebit" class="">I certify that I am the authorized account holder for this bank account and hereby authorize the processing of this single draft payment payable to: Grand Traverse Holding LLC <abbr class="required" title="required">*</abbr></label></p></div></div></div>';
             $this->description    = $payment_html;
     		$this->instructions       = $this->get_option( 'instructions' );

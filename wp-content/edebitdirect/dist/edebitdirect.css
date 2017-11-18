@@ -1,0 +1,20 @@
+.edebitdirect_checkout_popup
+{
+    width: 90% !important;
+    margin-left: -45% !important;
+    height:70%;
+    min-height:400px;
+    padding: 20px !important;
+}
+
+.edebitdirect_checkout_popup iframe
+{
+    width:100%;
+}
+
+.edebitdirect_iframe_wrap
+{
+    width:100%;
+}
+#payment_html p{margin: 0 0 .5em;}
+#payment_html label{margin: 6px 0 -21px;}

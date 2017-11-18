@@ -1,9 +1,9 @@
 === WooCommerce PayPal Express Checkout Payment Gateway ===
-Contributors: automattic, woothemes, akeda, dwainm, royho, allendav, slash1andy, woosteve, spraveenitpro, mikedmoore, fernashes, shellbeezy, danieldudzic, mikaey, fullysupportedphil, dsmithweb, corsonr, bor0
+Contributors: automattic, woothemes, akeda, dwainm, royho, allendav, slash1andy, woosteve, spraveenitpro, mikedmoore, fernashes, shellbeezy, danieldudzic, mikaey, fullysupportedphil, dsmithweb, corsonr, bor0, zandyring
 Tags: ecommerce, e-commerce, commerce, woothemes, wordpress ecommerce, store, sales, sell, shop, shopping, cart, checkout, configurable, paypal
 Requires at least: 4.4
-Tested up to: 4.4
-Stable tag: 1.2.0
+Tested up to: 4.8.1
+Stable tag: 1.4.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -84,6 +84,43 @@ https://gist.github.com/mikejolley/ad2ecc286c9ad6cefbb7065ba6dfef48
 3. Checkout with PayPal directly from the Cart.
 
 == Changelog ==
+
+= 1.4.3 =
+* Fix   - Refunds not working on authorize then captured transactions.
+* Fix   - Checkout on single product available before variations are chosen.
+* Fix   - Not Returning PayPal Transaction Fee.
+* Fix   - 10431 (Item Amount Invalid at Checkout) error with discounts.
+* Fix   - Phone not returned and "Require Phone Number" setting not working.
+
+= 1.4.2 =
+* Fix   - _paypal_status on Authorize transactions not updating to processing after capture.
+* Fix   - 10413 (The totals of the cart item amounts do not match order amounts) error with discounts.
+* Fix   - Shipping Address being required on Virtual products.
+
+= 1.4.1 =
+* Fix   - Properly calculate whether Billing phone is required or not.
+* Fix   - Set NOSHIPPING based on product shipping requiredness (e.g. virtual products do not need shipping, etc).
+
+= 1.4.0 =
+* Tweak - Use shipping discount instead of tax when adjustment negative.
+* Fix   - Cannot process refunds on "authorize" transactions.
+* Add   - Option for displaying express checkout button on the product page.
+* Fix   - If there are no shipping options in WooCommerce, PayPal doesn't pass a shipping address to WC.
+* Add   - Option to set Billing phone number mandatory.
+* Add   - Option to disable checkout with PayPal button on Cart page.
+* Fix   - Trigger required shipping cost before checkout.
+
+= 1.3.0 =
+* Fix - Fatal Error calling is_main_query.
+* Fix - Customer invoice email doesn't allow payment with PPEC.
+* Fix - Double stock reduction.
+* Fix - Payment automatically goes to complete when payment action set to Authorize.
+
+= 1.2.1 =
+* Fix - Avoid plugin links notice when WooCommerce is not active - props rellect
+* Fix - Do not show this gateway when the cart amount is zero
+* Fix - Fix 10413 error that prevents checking out with a coupon
+* Fix - Filter default address fields to ensure they are not required
 
 = 1.2.0 =
 * Fix - Prevent conflict with other gateways.

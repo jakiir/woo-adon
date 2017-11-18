@@ -263,6 +263,14 @@ return array(
 			'large'  => __( 'Large', 'woocommerce-gateway-paypal-express-checkout' ),
 		),
 	),
+	'cart_checkout_enabled' => array(
+		'title'       => __( 'Checkout on cart page', 'woocommerce-gateway-paypal-express-checkout' ),
+		'type'        => 'checkbox',
+		'label'       => __( 'Enable PayPal checkout on the cart page', 'woocommerce-gateway-paypal-express-checkout' ),
+		'description' => __( 'This shows or hides the PayPal checkout button on the cart page.', 'woocommerce-gateway-paypal-express-checkout' ),
+		'desc_tip'    => true,
+		'default'     => 'yes',
+	),
 	'mark_enabled' => array(
 		'title'       => __( 'PayPal Mark', 'woocommerce-gateway-paypal-express-checkout' ),
 		'type'        => 'checkbox',
@@ -316,6 +324,13 @@ return array(
 		'desc_tip'    => true,
 		'description' => __( 'This enables PayPal Credit, which displays a PayPal Credit button next to the Express Checkout button. PayPal Express Checkout lets you give customers access to financing through PayPal Credit® - at no additional cost to you. You get paid up front, even though customers have more time to pay. A pre-integrated payment button shows up next to the PayPal Button, and lets customers pay quickly with PayPal Credit®.', 'woocommerce-gateway-paypal-express-checkout' ),
 	),
+	'checkout_on_single_product_enabled' => array(
+		'title'       => __( 'Checkout on Single Product', 'woocommerce-gateway-paypal-express-checkout' ),
+		'type'        => 'checkbox',
+		'label'       => __( 'Checkout on Single Product', 'woocommerce-gateway-paypal-express-checkout' ),
+		'default'     => 'no',
+		'description' => __( 'Enable Express checkout on Single Product view.', 'woocommerce-gateway-paypal-express-checkout' ),
+	),
 
 	'advanced' => array(
 		'title'       => __( 'Advanced Settings', 'woocommerce-gateway-paypal-express-checkout' ),
@@ -342,8 +357,14 @@ return array(
 		'type'        => 'checkbox',
 		'label'       => __( 'Require Billing Address', 'woocommerce-gateway-paypal-express-checkout' ),
 		'default'     => 'no',
-		'desc_tip'    => true,
-		'description' => __( 'PayPal does not share buyer billing details with you. However, there are times when you must collect the buyer billing address to fulfill an essential business function (such as determining whether you must charge the buyer tax). Enable this function to collect the address before payment is taken. To enable this functionality on your PayPal account, please call PayPal customer support.', 'woocommerce-gateway-paypal-express-checkout' ),
+		'description' => sprintf( __( 'PayPal only returns a shipping address back to the website. To make sure billing address is returned as well, please enable this functionality on your PayPal account by calling %1$sPayPal Technical Support%2$s.', 'woocommerce-gateway-paypal-express-checkout' ), '<a href="https://www.paypal.com/us/selfhelp/contact/call">', '</a>' ),
+	),
+	'require_phone_number' => array(
+		'title'       => __( 'Require Phone Number', 'woocommerce-gateway-paypal-express-checkout' ),
+		'type'        => 'checkbox',
+		'label'       => __( 'Require Phone Number', 'woocommerce-gateway-paypal-express-checkout' ),
+		'default'     => 'no',
+		'description' => __( 'Require buyer to enter their telephone number during checkout if none is provided by PayPal', 'woocommerce-gateway-paypal-express-checkout' ),
 	),
 	'paymentaction' => array(
 		'title'       => __( 'Payment Action', 'woocommerce-gateway-paypal-express-checkout' ),

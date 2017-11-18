@@ -424,8 +424,9 @@ function init_edebitdirect_Payment_Gateway() {
                     if($secr_md5_edebitdirect==md5($order_secr))
                     {
 
-                        $order->update_status('completed');
-//                        $order->update_status('processing', __('Payment EXECUTED via edebitdirect', 'woocommerce'));
+                        //$order->update_status('completed');
+                        $order->update_status('pending', __('After verify payment status will be completed', 'woocommerce'));
+						//$order->update_status('processing', __('Payment EXECUTED via edebitdirect', 'woocommerce'));
                         $order->add_order_note( __('Payment edebitdirect Approved: Transaction ID'.$order->order_key, 'woocommerce') );
                         //$woocommerce->cart->empty_cart();
                         //wp_send_json( array( 'status' => 'success', 'data' => 'payment ok' ) );

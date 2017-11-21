@@ -17,7 +17,7 @@ jQuery( function( $ ) {
     $(document).on('click', '#place_order', function() {
         var edebitdirect_check = $( '#payment_method_edebitdirect' ).is( ':checked' );
         if(edebitdirect_check){
-            $('#check_number,#routing_number,#account_number,#certify_edebit').css('border','1px solid #bbb');			
+            $('#check_number,#routing_number,#account_number').css('border','1px solid #bbb');			
             if($('#check_number').val() == ''){
                 alert('Check number is required!');
                 $('#check_number').focus().css('border','1px solid red');
@@ -43,11 +43,11 @@ jQuery( function( $ ) {
                 $('#account_number').focus().css('border','1px solid red');
                 return false;
             }
-			if (!$('#certify_edebit:checkbox').is(':checked')) {
+			/*if (!$('#certify_edebit:checkbox').is(':checked')) {
 				alert('Certify checkbox is required!');
 				$('#certify_edebit').focus().css('border','1px solid red');
 				return false;
-			}
+			}*/
             /*if($('#account_number').val().length < 3 || $('#account_number').val().length > 9){
                 alert('Account number is minimum 3 digit and maximum 9 digit!');
                 $('#account_number').focus().css('border','1px solid red');

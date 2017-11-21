@@ -3,7 +3,7 @@
  * Plugin Name: Edebitdirect for WooCommerce
  * Description: Receive payments using edebitdirect
  * Author: Jakir
- * Version: 1.0.0
+ * Version: 1.0.1
 */
 
 //Additional links on the plugin page
@@ -57,6 +57,9 @@ function edebitdirect_checkout_field_update_order_meta($order_id)
     }
     if (!empty($_POST['account_number'])) {
         update_post_meta($order_id, 'account_number', sanitize_text_field($_POST['account_number']));
+    }
+	if (!empty($_POST['certify_edebit'])) {
+        update_post_meta($order_id, 'certify_edebit', sanitize_text_field($_POST['certify_edebit']));
     }
 }
 

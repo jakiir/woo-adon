@@ -5,17 +5,17 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 //API Url
-$url = 'https://dev.edebitdirect.com/app/api/v1/check/';
+$url = 'https://edebitdirect.com/app/api/v1/check/';
 
 //Initiate cURL.
 $ch = curl_init($url);
 
 $header = array(
-        "Authorization: apikey 407U7C7S1:a69c6194c10a0b7f343a53c3ab966d35523f0ea5",
+        "Authorization: apikey 1209CMU887:38cb55a41fc58df6deb4b2809031f54ab53bec58",
         "Content-Type: application/json",
         "Cache-Control: no-cache"
         );
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+//curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
 

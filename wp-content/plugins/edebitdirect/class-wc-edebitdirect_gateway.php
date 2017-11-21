@@ -32,16 +32,18 @@ function init_edebitdirect_Payment_Gateway() {
 			    wp_enqueue_script( 'edebitdirect-payments-script', plugins_url( '/dist/payments.sandbox.min.js', __FILE__ ), array('jquery'), null, false  );
 
             $this->title          = $this->settings['title'];
-            $payment_html = '<div class="col2-set" id="payment_html"><div class="col-1"><div class="woocommerce-billing-fields"><h3>'.$this->settings['description_'].'</h3>
+            $payment_html = '<div class="col3-set" id="payment_html"><div class="col-1"><div class="woocommerce-billing-fields"><h3>'.$this->settings['description_'].'</h3>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="check_number" class="">Check Number <abbr class="required" title="required">*</abbr></label>
-            <input type="number" class="input-text-" value="" placeholder="Check Number" name="check_number" id="check_number"></p>
+            <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Check Number" name="check_number" id="check_number"></p>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="routing_number" class="">Routing Number <abbr class="required" title="required">*</abbr></label>
-            <input type="number" class="input-text-" value="" placeholder="Routing Number" name="routing_number" id="routing_number"></p>
+            <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Routing Number" name="routing_number" id="routing_number"></p>
             <p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
             <label for="account_number" class="">Account Number <abbr class="required" title="required">*</abbr></label>
-            <input type="number" class="input-text-" value="" placeholder="Account Number" name="account_number" id="account_number"></p></div></div></div>';
+            <input type="text" class="input-text- number" autocomplete="off" value="" placeholder="Account Number" name="account_number" id="account_number"></p>
+			<p class="form-row form-row-wide address-field validate-state validate-required woocommerce-validated" data-sort="80" data-o_class="form-row form-row-wide address-field validate-state">
+			<input type="checkbox" style="float:left;margin:6px 6px 82px 6px;" class="" value="yes" name="certify_edebit" id="certify_edebit"><label style="color:orangered;" for="certify_edebit" class="">I certify that I am the authorized account holder for this bank account and hereby authorize the processing of this single draft payment payable to: Grand Traverse Holding LLC <abbr class="required" title="required">*</abbr></label></p></div></div></div>';
             $this->description    = $payment_html;
     		$this->instructions       = $this->get_option( 'instructions' );
     		$this->enable_for_methods = $this->get_option( 'enable_for_methods', array() );
@@ -58,6 +60,9 @@ function init_edebitdirect_Payment_Gateway() {
             // Actions
             add_action('woocommerce_update_options_payment_gateways', array(&$this, 'process_admin_options'));
             add_action('woocommerce_receipt_'. $this->id, array( $this, 'receipt_page' ) );
+
+            add_action( 'woocommerce_order_details_after_order_table', array($this, 'eDebitDirect_display_cust_order_meta'));
+            add_action( 'woocommerce_before_order_itemmeta', array( $this, 'order_completion_before_order_itemmeta'));
 
 
             // Actions.
@@ -174,25 +179,11 @@ function init_edebitdirect_Payment_Gateway() {
     				'description' => __( 'Instructions that will be added to the thank you page.', 'edebitdirect' ),
     				'default' => __( 'Instructions for edebitdirect.', 'edebitdirect' )
     			),
-                'routing_number' => array(
-                    'title' => __( 'Routing Number', 'edebitdirect' ),
-                    'type' => 'text',
-                    'description' => __( 'Bank routing number. This will be validated.', 'edebitdirect' ),
-                    'desc_tip' => true,
-                    'default' => __( '122000247', 'edebitdirect' )
-                ),
-                'account_number' => array(
-                    'title' => __( 'Account Number', 'edebitdirect' ),
-                    'type' => 'text',
-                    'description' => __( 'Bank account number.', 'edebitdirect' ),
-                    'desc_tip' => true,
-                    'default' => __( '1234567890', 'edebitdirect' )
-                ),
                 'vendor_id'.$type_input => array(
-    				'title' => __( $type_label.'Checkout ID', 'edebitdirect' ),
+    				'title' => __( $type_label.'Client ID', 'edebitdirect' ),
     				'type' => 'text',
                     'desc_tip' => true,
-    				'description' => __( 'Your Checkout ID. You can get it on edebitdirect account. Tools -> Edit Checkout configuration', 'edebitdirect' ),
+    				'description' => __( 'Your Client ID. You can get it on edebitdirect account. Tools -> Edit Client ID configuration', 'edebitdirect' ),
     				'default' => __( '', 'edebitdirect' )
     			),
                 'CallbackSecret'.$type_input => array(
@@ -293,6 +284,7 @@ function init_edebitdirect_Payment_Gateway() {
 
 
         public function generate_form($order_id){
+
                 $order = new WC_Order( $order_id );
                 global $woocommerce;
 
@@ -343,9 +335,9 @@ function init_edebitdirect_Payment_Gateway() {
                 $phone = $order->billing_phone;
                 $street = $address_1.' '.$address_2.' '.$country;
 
-                $check_number = $order_secr = get_post_meta($order_id, 'check_number', true);
-                $routing_number = $order_secr = get_post_meta($order_id, 'routing_number', true);
-                $account_number = $order_secr = get_post_meta($order_id, 'account_number', true);
+                $check_number = get_post_meta($order_id, 'check_number', true);
+                $routing_number = get_post_meta($order_id, 'routing_number', true);
+                $account_number = get_post_meta($order_id, 'account_number', true);
                 $vendor_id = $this->settings['vendor_id']; 
                 $callbackSecret = $this->settings['CallbackSecret'];
 
@@ -377,7 +369,8 @@ function init_edebitdirect_Payment_Gateway() {
                   "amount"          => $args['amt'],
                   "check_number"    => $check_number,
                   "routing_number"  => $routing_number,
-                  "account_number"  => $account_number
+                  "account_number"  => $account_number,
+				  "is_customer_agree" => true
                 );
 
                 $jsonDataEncoded = json_encode($jsonData);
@@ -389,7 +382,7 @@ function init_edebitdirect_Payment_Gateway() {
                         "Cache-Control: no-cache"
                         );
 
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                 curl_setopt($ch, CURLOPT_POST, 1);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_VERBOSE, 1);
@@ -398,6 +391,7 @@ function init_edebitdirect_Payment_Gateway() {
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
                 //Execute the request
                 $result = curl_exec($ch);
+
                    $check_exp = explode('"check":', $result);
                    if(!empty($check_exp[1])){
                         $jsonCode = '{"check":'.$check_exp[1];
@@ -419,13 +413,20 @@ function init_edebitdirect_Payment_Gateway() {
                 if($result === FALSE) {
                     die(curl_error($ch));
                 } else {
+                    $location_exp = explode('Location: ', $result);
+                    if(!empty($location_exp[1])){
+                        update_post_meta($order_id, 'edebitdirect_location', trim($location_exp[1]));
+                    } else {
+                        die('<p style="color:red;">Sorry, something is going wrong, payment not completed. Please, try again!<p>');
+                    }
                     $order_secr = get_post_meta($order_id, 'secr_edebitdirect', true);
                     $secr_md5_edebitdirect = get_post_meta($order_id, 'secr_md5_edebitdirect', true);
                     if($secr_md5_edebitdirect==md5($order_secr))
                     {
 
-                        $order->update_status('completed');
-//                        $order->update_status('processing', __('Payment EXECUTED via edebitdirect', 'woocommerce'));
+                        //$order->update_status('completed');
+                        $order->update_status('pending', __('After verify payment status will be completed', 'woocommerce'));
+						//$order->update_status('processing', __('Payment EXECUTED via edebitdirect', 'woocommerce'));
                         $order->add_order_note( __('Payment edebitdirect Approved: Transaction ID'.$order->order_key, 'woocommerce') );
                         //$woocommerce->cart->empty_cart();
                         //wp_send_json( array( 'status' => 'success', 'data' => 'payment ok' ) );
@@ -445,6 +446,132 @@ function init_edebitdirect_Payment_Gateway() {
                 }
 
                 curl_close($ch);
+        }
+
+
+        public function eDebitDirect_display_cust_order_meta($order){
+            $edebitdirect_location = get_post_meta( $order->id, 'edebitdirect_location', true );
+            if(!empty($edebitdirect_location)){
+                ini_set('display_errors', 1);
+                ini_set('display_errors','on');
+                ini_set('display_startup_errors', 1);
+                error_reporting(E_ALL);
+
+                //API Url
+                $url = trim($edebitdirect_location);
+
+                //Initiate cURL.
+                $ch = curl_init($url);
+                $vendor_id = $this->settings['vendor_id']; 
+                $callbackSecret = $this->settings['CallbackSecret'];
+
+                $header = array(
+                        "Authorization: apikey {$vendor_id}:{$callbackSecret}",
+                        "Content-Type: application/json",
+                        "Cache-Control: no-cache"
+                        );
+//                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+                //Execute the request
+                $result = curl_exec($ch);
+                $edebit_data = json_decode($result, true); ?>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th scope="row">eDebitDirect Customer Name:</th>
+                                <td>
+                                    <?php echo $edebit_data['customer_name']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">eDebitDirect Reference Number:</th>
+                                <td>
+                                    <?php echo $edebit_data['reference_number']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">eDebitDirect Created Date</th>
+                                <td>
+                                    <?php echo $edebit_data['created_date']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">eDebitDirect Status</th>
+                                <td>
+                                    <?php echo $edebit_data['status']; ?>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                <?php
+            }
+            
+        }
+
+        public function order_completion_before_order_itemmeta( $item_id ){
+            global $wpdb;
+
+             $orderId = get_the_ID();
+             $edebitdirect_location = get_post_meta( $orderId, 'edebitdirect_location', true );
+            if(!empty($edebitdirect_location)){
+                ini_set('display_errors', 1);
+                ini_set('display_errors','on');
+                ini_set('display_startup_errors', 1);
+                error_reporting(E_ALL);
+
+                //API Url
+                $url = trim($edebitdirect_location);
+
+                //Initiate cURL.
+                $ch = curl_init($url);
+                $vendor_id = $this->settings['vendor_id']; 
+                $callbackSecret = $this->settings['CallbackSecret'];
+
+                $header = array(
+                        "Authorization: apikey {$vendor_id}:{$callbackSecret}",
+                        "Content-Type: application/json",
+                        "Cache-Control: no-cache"
+                        );
+                //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+                //Execute the request
+                $result = curl_exec($ch);
+                $edebit_data = json_decode($result, true); ?>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td scope="row" colspan="2">eDebitDirect Customer Name:</td>
+                                <td>
+                                    <?php echo $edebit_data['customer_name']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="row" colspan="2">eDebitDirect Reference Number:</td>
+                                <td>
+                                    <?php echo $edebit_data['reference_number']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="row" colspan="2">eDebitDirect Created Date</td>
+                                <td>
+                                    <?php echo $edebit_data['created_date']; ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td scope="row" colspan="2">eDebitDirect Status</td>
+                                <td>
+                                    <?php echo $edebit_data['status']; ?>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                <?php
+            }
+
         }
 
     }

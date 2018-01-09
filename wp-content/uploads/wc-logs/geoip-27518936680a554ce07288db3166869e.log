@@ -165,3 +165,5 @@
 2017-11-18T12:37:04+00:00 INFO GEOIP (geoip_country_id_by_addr_v6): PHP was compiled with --disable-ipv6 option
 2017-11-18T12:37:05+00:00 INFO GEOIP (geoip_country_id_by_addr_v6): PHP was compiled with --disable-ipv6 option
 2017-11-18T12:37:07+00:00 INFO GEOIP (geoip_country_id_by_addr_v6): PHP was compiled with --disable-ipv6 option
+2018-01-09T17:03:31+00:00 INFO GEOIP (geoip_country_id_by_addr_v6): PHP was compiled with --disable-ipv6 option
+2018-01-09T17:03:36+00:00 INFO GEOIP (geoip_country_id_by_addr_v6): PHP was compiled with --disable-ipv6 option
